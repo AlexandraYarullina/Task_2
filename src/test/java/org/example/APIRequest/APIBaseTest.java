@@ -1,4 +1,4 @@
-package org.example;
+package org.example.APIRequest;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,4 +11,5 @@ public class APIBaseTest {
     public void setUp(){
         RestAssured.baseURI=BASE_URI;
     }
+
 }

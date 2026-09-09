@@ -1,9 +1,11 @@
+//Создание пользователя:
+//        создать уникального пользователя;
+//        создать пользователя, который уже зарегистрирован;
+//        создать пользователя и не заполнить одно из обязательных полей.
+
 package org.example.APITests;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
 import jdk.jfr.Description;
-import org.example.APIRequest.APIBaseTest;
 import org.example.APIRequest.UserRequest;
 import org.example.DataUser;
 import org.junit.jupiter.api.AfterEach;
@@ -12,92 +14,65 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static Utils.Constants.*;
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-public class CreateUserTest {
-    public Response response;
-    private String accessToken;
+public class UserRegistrationTest {
     UserRequest userRequest = new UserRequest();
     DataUser dataUser = new DataUser(EMAIL, PASSWORD, NAME);
+    private String accessToken;
 
     @BeforeEach
     public void setUp() {
-        if (userRequest == null) {
-            throw new IllegalStateException("userRequest is null before setUp(). " +
-                    "Ensure it's initialized in the field declaration or constructor.");
-        }
+
         userRequest.setUp();
+        userRequest.setDataUser(dataUser);
+        accessToken = userRequest.loginUser().then().extract().path("accessToken");
     }
 
     @Test
-    @DisplayName("Создаём пользователя")
+    @DisplayName("Регистрация пользователя")
+    @Description("Проверка успешной регистрации пользователя, возвращается код 200 и success : true")
     public void createUserTest() {
-        userRequest.setDataUser(dataUser);
         userRequest.createUser()
                 .then().assertThat().body("success", equalTo(true))
                 .statusCode(OK_STATUS_COD);
-//        accessTokenResponse=response.then().extract().body().path("accessToken");
-//        accessToken=accessTokenResponse.substring(7);
-//        System.out.println(accessToken);
-
-        //               .statusCode(OK_STATUS_COD);
-//                .log().all();
-//        System.out.println();
-        // System.out.println(response.body().asString());
-        // accessToken = userRequest.getAccessTokenUser();
-
-//        Response response =
-//                given()
-//                        .header("Content-type", "application/json")
-//                        .body(new DataUser("rterty","gu328hrg","user6"))
-//                        .when()
-//                        .post("api/v1/courier");
-        // accessToken = userRequest.getAccessTokenUser();
-        // response.then().statusCode(CREATE_STATUS_COD);
-
-
     }
 
     @Test
-    @DisplayName("Создаём пользователя без email")
-    @Description("В документации к API необходимо ввсети корректировки в документе")
-    public void createUserWithoutPasswordTest() {
-        userRequest.setDataUser(new DataUser("", PASSWORD, NAME));
+    @DisplayName("Регистрация пользователя без email")
+    @Description("При попытке регистрации без логина, возвращается код 403 и success : false")
+    public void checkCreateUserWithoutPassword() {
+        dataUser.setEmail("");
         userRequest.createUser()
                 .then().assertThat().body("success", equalTo(false))
                 .statusCode(FORBIDDEN_STATUS_COD);
-        //.statusCode(UNAUTHORIZED_STATUS_COD);
-    }
-    @Test
-    @DisplayName("Создаём пользователя без пароля")
-    @Description("В документации к API необходимо ввсети корректировки в документе")
-    public void createUserWithoutEmailTest() {
-        userRequest.setDataUser(new DataUser(EMAIL, "", NAME));
-        userRequest.createUser()
-                .then().assertThat().body("success", equalTo(false))
-                .statusCode(FORBIDDEN_STATUS_COD);
-        //.statusCode(UNAUTHORIZED_STATUS_COD);
     }
 
     @Test
-    @DisplayName("Создаём пользователя без имени")
-    @Description("В документации к API необходимо ввсети корректировки в документе")
-    public void createUserWithoutNameTest() {
-        userRequest.setDataUser(new DataUser(EMAIL, PASSWORD, ""));
+    @DisplayName("Регистрация пользователя без пароля")
+    @Description("При попытке регистрации без пароля, возвращается код 403 и success : false")
+    public void checkCreateUserWithoutEmail() {
+        dataUser.setPassword("");
         userRequest.createUser()
                 .then().assertThat().body("success", equalTo(false))
                 .statusCode(FORBIDDEN_STATUS_COD);
-        //.statusCode(UNAUTHORIZED_STATUS_COD);
     }
 
     @Test
-    @DisplayName("Создаём одинакового пользователя")
-    public void checkDuplicateUserCreated() {
-        userRequest.setDataUser(dataUser);
+    @DisplayName("Регистрация пользователя без имени")
+    @Description("При попытке регистрации без имени, возвращается код 403 и success : false")
+    public void checkCreateUserWithoutName() {
+        dataUser.setName("");
         userRequest.createUser()
-                .then().assertThat().body("success", equalTo(true))
-                .statusCode(OK_STATUS_COD);
+                .then().assertThat().body("success", equalTo(false))
+                .statusCode(FORBIDDEN_STATUS_COD);
+    }
+
+    @Test
+    @DisplayName("Регистрация одинакового пользователя")
+    @Description("При попытке регистрации одинакового пользователя, возвращается код 403 и success : false")
+    public void checkCreateDuplicateUser() {
+        userRequest.createUser();
         userRequest.createUser()
                 .then().assertThat().body("success", equalTo(false))
                 .statusCode(FORBIDDEN_STATUS_COD);
@@ -106,13 +81,6 @@ public class CreateUserTest {
     @AfterEach
     @DisplayName("Удаление пользователя по токену")
     public void deleteUser() {
-        String accessToken =
-                given()
-                        .header("Content-type", "application/json")
-                        .body(dataUser)
-                        .when()
-                        .post(LOGIN_ENDPOINT_USER)
-                        .then().extract().body().path("accessToken");
         if (accessToken!=null) {
             userRequest.deleteUser(accessToken);
         }
