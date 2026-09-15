@@ -32,13 +32,6 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <!--      <version>3.8.1</version>-->
-      <version>4.13.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <version>4.4.0</version>
@@ -130,7 +123,6 @@
           </dependency>
         </dependencies>
       </plugin>
-
       <!-- подключение плагина allure-maven для вызова функций Allure с помощью Maven -->
       <plugin>
         <groupId>io.qameta.allure</groupId>
