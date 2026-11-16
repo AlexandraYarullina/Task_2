@@ -1,9 +1,9 @@
-package org.example;
+package org.example.apirequest;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 
-import static Utils.Constants.BASE_URI;
+import static utils.Constants.BASE_URI;
 
 public class APIBaseTest {
 
